@@ -1,0 +1,23 @@
+> | rain - weekend - happy.
+# CNF: & | - rain - happy | weekend - happy
+
+= weekend - workday.
+# CNF: & | weekend workday | - weekend - workday
+
+% weekend workday.
+# CNF: & | weekend workday | - weekend - workday
+
+- % a b.
+# CNF: & | - a b | a - b
+
+| | a - b | - c & d - e.
+# CNF: & | | a - b | - c d | | a - b | - c - e
+
+###########################
+= p1 & - t1 t2.
+= p2 % t1 t2.
+% p1 p2.
+###########################
+> w - tv.
+> & r - w h.
+& tv - h.
