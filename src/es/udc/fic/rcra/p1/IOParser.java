@@ -21,10 +21,11 @@ public class IOParser {
 		
 		try (Scanner scanner = new Scanner(new File(path))) {
 			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine().trim();
+				String line = scanner.nextLine();
 
 				if (!line.isEmpty() && !line.startsWith((COMMENT_SYMBOL))) {
-					formulas.add(line.substring(0, line.length() - 1));  // without the final dot
+					int dot = line.indexOf('.');
+					formulas.add(line.substring(0, dot).trim());  // without the final dot
 				}
 			}
 		}
@@ -36,7 +37,7 @@ public class IOParser {
 		List<String> operators = Arrays.asList(PropositionalOperator.symbols());
 		
 		for (String s : formula.split(" ")) {
-			if (!operators.contains(s)) {
+			if (!operators.contains(s) && !s.equals("0") && !s.equals("1")) {
 				atoms.add(s);
 			}
 		}
@@ -64,7 +65,7 @@ public class IOParser {
 
 		for (int i=0; i<originalFormulas.size(); i++) {
 			writer.write("% " + originalFormulas.get(i) + " .\n");
-			writer.write(toClingo(cnfFormulas.get(i)) + "\n");
+			writer.write(formatProposition(cnfFormulas.get(i)) + "\n");
 		}
 		writer.close();
 	}
@@ -80,7 +81,7 @@ public class IOParser {
 		return out + "}.\n\n";
 	}
 
-	private static String toClingo(Proposition prop) {
+	private static String formatProposition(Proposition prop) {
 		String out = "";
 		Set<Proposition> clauses = prop.getClauses();
 
@@ -93,13 +94,10 @@ public class IOParser {
 
 	private static String formatClause(Proposition prop) {
 		if (prop.isSimple()) {
-			if (prop.getAtom().equals("0")) return "#true";
-			else if(prop.getAtom().equals("1")) return "#false";
-			else return "not " + prop;
+			return "not " + (prop.getAtom().equals("0") ? "#false" :
+					(prop.getAtom().equals("1") ? "#true" : prop.getAtom()));
 		} else if (prop.getOperator() == PropositionalOperator.NEGATION) {
-			if (prop.getLeft().getAtom().equals("0")) return "#false";
-			else if(prop.getLeft().getAtom().equals("1")) return "#true";
-			else return prop.getLeft().toString();
+			return formatClause(prop.getLeft()).replace("not ", "");
 		} else {
 			return formatClause(prop.getLeft()) + ", " + formatClause(prop.getRight());
 		}
